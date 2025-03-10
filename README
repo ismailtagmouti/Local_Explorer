@@ -1,0 +1,81 @@
+# LOCAL_EXPLORER
+
+LOCAL_EXPLORER is a web application that provides weather information and suggests nearby activities based on the current weather. The app uses APIs such as OpenWeather, Google Maps, and AI to generate relevant suggestions for indoor and outdoor activities.
+
+## Features
+
+- Get current weather data based on your location.
+- Discover nearby places (indoor and outdoor activities).
+- Receive AI-generated activity suggestions based on the weather and your location.
+- Fully Dockerized for easy deployment.
+
+## Requirements
+
+Before running the project, make sure you have the following installed:
+
+- Python 3.x
+- Docker (if using Docker for deployment)
+- An API key for OpenWeather, Google Maps, and AI (required for the services to work).
+
+## Setup Instructions
+
+### Step 1: Clone the Repository
+
+Clone the repository to your local machine:
+
+git clone https://github.com/yourusername/LOCAL_EXPLORER.git
+
+cd LOCAL_EXPLORER
+
+### Step 2: Install Dependencies
+You can install the required dependencies manually or by using Docker.
+
+### Option 1: Using Python (Local Setup)
+Create a virtual environment:
+python -m venv venv
+Activate the virtual environment:
+
+### On Windows:
+.\venv\Scripts\activate
+### On macOS/Linux:
+source venv/bin/activate
+
+Install the required dependencies:
+
+pip install -r requirements.txt
+
+### Option 2: Using Docker
+If you prefer using Docker for deployment, skip the manual installation of dependencies and follow the steps below.
+
+### Step 3: Set API Keys
+The project requires API keys for the following services:
+
+OpenWeather: Sign up here to get your API key.
+
+Google Maps: Sign up here to get your API key.
+
+AI Service (GenAI): Sign up here for access.
+
+Once you have your API keys, replace the placeholders in the app.py file with your keys:
+
+WEATHER_API_KEY = "your_openweather_api_key"
+
+GOOGLE_MAPS_API_KEY = "your_google_maps_api_key"
+
+GENAI_API_KEY = "your_genai_api_key"
+
+### Step 4: Run the Application
+###  Option 1: Running with Python
+Run the Flask application locally:
+
+python app.py
+Visit http://127.0.0.1:5000 in your web browser to use the app.
+
+### Option 2: Running with Docker
+Build the Docker image:
+
+docker build -t local_explorer .
+Run the Docker container:
+
+docker run -p 5000:5000 local_explorer
+Visit http://127.0.0.1:5000 in your web browser to use the app.

@@ -7,10 +7,9 @@ from google import genai
 app = Flask(__name__, template_folder="templates")
 CORS(app)
 
-# Set your API keys here (replace with your actual keys)
-WEATHER_API_KEY = "77683cac8a126c60d51a6d3d7756bc06"
-GOOGLE_MAPS_API_KEY = "AIzaSyAbFTpavYd31XB9MIH1qCt8f2KzRRvVX3k"
-GENAI_API_KEY = "AIzaSyCyrKQufcP8UyweIYWS3g6SVca_IZXTLQw"
+WEATHER_API_KEY = "your-openweathermap-api"
+GOOGLE_MAPS_API_KEY = "your-google-maps-api"
+GENAI_API_KEY = "your-genai-api"
 
 gmaps = googlemaps.Client(key=GOOGLE_MAPS_API_KEY)
 
@@ -24,15 +23,15 @@ def get_weather(lat, lon):
     data = response.json()
     return {
         "location": data.get("name", "Unknown Location"),
-        "temperature": round(data["main"]["temp"]),  # Round to match UI format
-        "real_feel": round(data["main"]["feels_like"]),  # Feels-like temperature
-        "weather": data["weather"][0]["main"],  # Weather condition (Rain, Clear, etc.)
-        "description": data["weather"][0]["description"].capitalize(),  # Weather description
-        "humidity": data["main"]["humidity"],  # Humidity percentage
-        "wind_speed": data["wind"]["speed"],  # Wind speed in km/h
-        "wind_gusts": data["wind"].get("gust", 0),  # Wind gusts (if available)
-        "cloud_cover": data["clouds"]["all"],  # Cloud coverage percentage
-        "icon": f"http://openweathermap.org/img/wn/{data['weather'][0]['icon']}@2x.png",  # Weather icon
+        "temperature": round(data["main"]["temp"]),  
+        "real_feel": round(data["main"]["feels_like"]),
+        "weather": data["weather"][0]["main"],  
+        "description": data["weather"][0]["description"].capitalize(), 
+        "humidity": data["main"]["humidity"], 
+        "wind_speed": data["wind"]["speed"], 
+        "wind_gusts": data["wind"].get("gust", 0),  
+        "cloud_cover": data["clouds"]["all"],  
+        "icon": f"http://openweathermap.org/img/wn/{data['weather'][0]['icon']}@2x.png",  
         "lat": data["coord"]["lat"],  
         "lon": data["coord"]["lon"]
     }
@@ -40,7 +39,7 @@ def get_weather(lat, lon):
 def find_nearby_places(lat, lon, query="activity", radius=5000):
     places = gmaps.places_nearby(
         location=(lat, lon),
-        radius=radius,  # 5km radius
+        radius=radius, 
         keyword=query
     )
 
@@ -78,30 +77,30 @@ def find_nearby_places(lat, lon, query="activity", radius=5000):
 
     return places_list
 
-# ✅ AI Activity Suggestion (Indoor and Outdoor)
+
 @app.route("/suggest_activity", methods=["POST"])
 def suggest_activity():
     data = request.json
     location = data.get("location")
     weather = data.get("weather")
     temperature = data.get("temperature")
-    activity_type = data.get("activity_type", "both")  # New parameter to specify 'indoor', 'outdoor', or 'both'
+    activity_type = data.get("activity_type", "both") 
 
     if not location or not weather or not temperature:
         return jsonify({"error": "Missing required data"}), 400
 
-    # Adjust the prompt based on activity type
+
     if activity_type == "indoor":
         prompt = f"Suggest an indoor activity for someone in {location} where the weather is {weather} and the temperature is {temperature}°C."
     elif activity_type == "outdoor":
         prompt = f"Suggest an outdoor activity for someone in {location} where the weather is {weather} and the temperature is {temperature}°C."
-    else:  # Default to both indoor and outdoor activities
+    else:  
         prompt = f"Suggest an indoor or outdoor activity for someone in {location} where the weather is {weather} and the temperature is {temperature}°C."
 
     try:
-        genai_client = genai.Client(api_key=GENAI_API_KEY)  # Initialize GenAI client
+        genai_client = genai.Client(api_key=GENAI_API_KEY)  #
         response = genai_client.models.generate_content(
-            model="gemini-2.0-flash",  # Ensure you're using the correct model
+            model="gemini-2.0-flash",  
             contents=prompt
         )
 
@@ -109,7 +108,7 @@ def suggest_activity():
         return jsonify({"suggested_activity": suggestion})
 
     except Exception as e:
-        print(f"Error occurred: {str(e)}")  # Log the error
+        print(f"Error occurred: {str(e)}")  
         return jsonify({"error": "Failed to generate activity suggestion", "message": str(e)}), 500
 
 @app.route("/", methods=["GET"])
