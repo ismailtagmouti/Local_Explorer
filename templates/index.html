@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loacal Explorer</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" 
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom, #2c2c2c, #000);
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 24px;
+            padding: 10px;
+            text-align: center;
+        }
+        .weather-container {
+            width: 60%;
+            margin: 20px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+        .weather-icon {
+            font-size: 60px;
+        }
+        .suggestion-container {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .suggestion-container h4 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .suggestion-container p {
+            font-size: 18px;
+            color: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        Local Explorer
+    </nav>
+
+    <section class="weather-container">
+        <div class="weather-header">
+            <p id="date">Loading...</p>
+            <i class="bi bi-cloud weather-icon text-white" id="weatherIcon"></i> <!-- Dynamic Icon -->
+            <span class="temperature" id="temperature">--°</span>
+        </div>
+
+        <p class="weather-description" id="weatherDesc">Loading weather...</p>
+
+        <div class="weather-details">
+            <p>RealFeel: <span id="realFeel">--</span>°</p>
+            <p>Cloud Cover: <span id="cloudCover">--</span>%</p>
+        </div>
+
+        <div class="weather-wind">
+            <p><i class="bi bi-wind text-white"></i> Wind: <span id="windSpeed">--</span> km/h</p>
+            <p>Gusts: <span id="windGusts">--</span> km/h</p>
+        </div>
+    </section>
+
+    <section class="places-container">
+        <h3>Nearby Activities</h3>
+        <div class="places-slider-container">
+            <!-- Slider Button Left -->
+            <button class="slider-btn left" onclick="slideLeft()">❮</button>
+    
+            <!-- Places Slider -->
+            <div id="placesSlider" class="places-slider">
+                <!-- Dynamic items will be inserted here -->
+            </div>
+    
+            <!-- Slider Button Right -->
+            <button class="slider-btn right" onclick="slideRight()">❯</button>
+        </div>
+    </section>
+
+        <!-- AI Activity Suggestion Section -->
+        <section class="suggestion-container">
+            <h4>Suggested Activity</h4>
+            <p id="aiActivity">Loading activity suggestion...</p>
+        </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        window.onload = function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(fetchWeather, showError);
+            } else {
+                document.getElementById("weatherDesc").innerText = "Geolocation not supported.";
+            }
+        };
+
+        function fetchWeather(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            fetch("/fetch_weather", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ lat: lat, lon: lon })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById("weatherDesc").innerText = "Weather data not available.";
+                    return;
+                }
+
+                document.getElementById("temperature").innerText = `${data.weather.temperature}°`;
+                document.getElementById("realFeel").innerText = data.weather.real_feel;
+                document.getElementById("cloudCover").innerText = data.weather.cloud_cover;
+                document.getElementById("windSpeed").innerText = data.weather.wind_speed;
+                document.getElementById("windGusts").innerText = data.weather.wind_gusts;
+                document.getElementById("weatherDesc").innerText = data.weather.description;
+                console.log(data);
+
+                const today = new Date();
+                document.getElementById("date").innerText = `DIM. ${today.getDate()}/${today.getMonth() + 1}`;
+
+                // Set Weather Icon Dynamically
+                updateWeatherIcon(data.weather.weather.toLowerCase());
+                fetchNearbyPlaces(lat, lon);
+                suggestActivity(location, data.weather.description, data.weather.temperature);
+            })
+            .catch(error => console.error("Error fetching weather:", error));
+        }
+
+        function updateWeatherIcon(condition) {
+            let iconElement = document.getElementById("weatherIcon");
+            let iconClass = "bi bi-question"; // Default fallback
+
+            if (condition.includes("clear")) iconClass = "bi bi-brightness-high";
+            else if (condition.includes("rain")) iconClass = "bi bi-cloud-rain";
+            else if (condition.includes("cloud")) iconClass = "bi bi-cloud";
+            else if (condition.includes("snow")) iconClass = "bi bi-snow";
+            else if (condition.includes("mist") || condition.includes("fog")) iconClass = "bi bi-cloud-fog";
+
+            iconElement.className = `bi ${iconClass} weather-icon text-white`;
+        }
+
+        function showError(error) {
+            document.getElementById("weatherDesc").innerText = "Error getting location.";
+        }
+
+        function fetchNearbyPlaces(lat, lon) {
+            fetch("/fetch_places", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ lat: lat, lon: lon })
+            })
+            .then(response => response.json())
+            .then(data => {
+                placesData = data; 
+                displayNearbyPlaces(placesData);
+            })
+            .catch(error => console.error("Error fetching nearby places:", error));
+        }
+
+        function suggestActivity(location, weather, temperature) {
+    fetch("/suggest_activity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            location: location,
+            weather: weather,
+            temperature: temperature,
+            activity_type: "both" // Adjust to 'indoor' or 'outdoor' if needed
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.suggested_activity) {
+            document.getElementById("aiActivity").innerText = data.suggested_activity;
+        } else {
+            document.getElementById("aiActivity").innerText = "No activity suggestion available.";
+        }
+    })
+    .catch(error => {
+        document.getElementById("aiActivity").innerText = "Error fetching activity suggestion.";
+    });
+}
+
+        let placesData = {}; 
+        let currentIndex = 0;
+        const itemsPerSlide = 3; 
+
+        function displayNearbyPlaces(places) {
+            const placesContainer = document.getElementById("placesSlider");
+            placesContainer.innerHTML = "";  
+
+            const allPlaces = [...places.indoor, ...places.outdoor]; 
+            const totalItems = allPlaces.length;
+
+            const placesToDisplay = allPlaces.slice(currentIndex * itemsPerSlide, (currentIndex + 1) * itemsPerSlide);
+
+            placesToDisplay.forEach((place) => {
+                const itemHTML = `
+                    <div class="place-item">
+                        <h5>${place.name}</h5>
+                        <p>${place.address}</p>
+                        <p>Opening hours: ${place.opening_hours}</p>
+                        <p>Rating: ${place.rating}</p>
+                        <p>Phone number: ${place.phone_number}</p>
+                        <p>Website: ${place.website}</p>
+                    </div>
+                `;
+                placesContainer.innerHTML += itemHTML;
+            });
+
+            if (currentIndex === 0) {
+                document.querySelector(".slider-btn.left").disabled = true;
+            } else {
+                document.querySelector(".slider-btn.left").disabled = false;
+            }
+
+            if (currentIndex >= Math.ceil(totalItems / itemsPerSlide) - 1) {
+                document.querySelector(".slider-btn.right").disabled = true;
+            } else {
+                document.querySelector(".slider-btn.right").disabled = false;
+            }
+        }
+
+        function slideLeft() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayNearbyPlaces(placesData); 
+            }
+        }
+
+        function slideRight() {
+            const totalItems = placesData.indoor.length + placesData.outdoor.length;
+            if (currentIndex < Math.ceil(totalItems / itemsPerSlide) - 1) {
+                currentIndex++;
+                displayNearbyPlaces(placesData); 
+            }
+        }
+    </script>
+
+</body>
+</html>

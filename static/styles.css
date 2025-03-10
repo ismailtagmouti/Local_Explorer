@@ -1,0 +1,150 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Body Styling */
+body {
+    background: linear-gradient(to bottom, #2c2c2c, #000);
+    color: white;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+/* Navbar Styling */
+.navbar {
+    width: 100%;
+    text-align: center;
+    background: linear-gradient(to right, #1577e7, #0b4153);
+    color: white;
+    padding: 15px 0;
+    font-size: 22px;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Weather Container */
+.weather-container {
+    width: 80%;
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0px 6px 12px rgba(0, 0, 139, 0.3); /* Dark blue shadow */
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+/* Weather Header */
+.weather-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.weather-header p {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.temperature {
+    font-size: 42px;
+    font-weight: bold;
+}
+
+/* Weather Icon */
+.weather-icon {
+    width: 65px;
+    height: 65px;
+}
+
+/* Weather Description */
+.weather-description {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ddd;
+    margin: 15px 0;
+}
+
+/* Weather Details */
+.weather-details, .weather-wind {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    margin-top: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0px 6px 12px rgba(0, 0, 139, 0.3); /* Dark blue shadow */
+    border-radius: 10px;
+}
+
+/* Weather Wind */
+.weather-wind i {
+    margin-right: 5px;
+}
+
+/* Carousel Container */
+.places-slider-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    max-width: 1000px;  /* Adjust the max width */
+    margin: 40px auto;
+}
+
+/* The places slider will contain the items */
+.places-slider {
+    display: flex;
+    gap: 20px;  /* Space between items */
+    overflow: hidden;
+    width: 100%;  /* The width should match the container */
+    transition: transform 0.5s ease-in-out;  /* Smooth sliding */
+}
+
+/* Each place will take up about 33% of the container */
+.place-item {
+    flex: 0 0 32%;  /* Display 3 items per row */
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 6px 12px rgba(0, 0, 139, 0.3); /* Dark blue shadow */
+    text-align: center;
+}
+
+/* Buttons to slide */
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 24px;
+    border: none;
+    padding: 15px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.left {
+    left: 10px;
+}
+
+.right {
+    right: 10px;
+}
+
+@media (max-width: 768px) {
+    .place-item {
+        flex: 0 0 48%;  /* Adjust width to show 2 items on tablets */
+    }
+}
+
+@media (max-width: 600px) {
+    .place-item {
+        flex: 0 0 90%;  /* Adjust width to show 1 item on mobile */
+    }
+}
